@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VeriPura — Importer Value Calculator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#0E2545;
+    --navy-light:#16345F;
+    --gold:#D4A847;
+    --gold-dim:#B8913A;
+    --ink:#1A2332;
+    --cream:#F7F4EC;
+    --sky:#D6E4F0;
+    --slate:#8A94A6;
+    --slate-line:#DADFE7;
+    --white:#FFFFFF;
+    --good:#2F6B4F;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:'DM Sans',sans-serif;
+    background:var(--cream);
+    color:var(--ink);
+  }
+  .vp-wrap{max-width:1180px;margin:0 auto;padding:0 0 3rem;}
+
+  /* Header */
+  .vp-header{
+    background:var(--navy);
+    color:var(--white);
+    padding:2.25rem 2.5rem 2rem;
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-end;
+    flex-wrap:wrap;
+    gap:1rem;
+    border-bottom:3px solid var(--gold);
+  }
+  .vp-brand{display:flex;align-items:center;gap:.6rem;}
+  .vp-mark{
+    width:34px;height:34px;border-radius:50%;
+    border:2px solid var(--gold);
+    display:flex;align-items:center;justify-content:center;
+    flex-shrink:0;
+  }
+  .vp-mark svg{width:16px;height:16px;}
+  .vp-wordmark{font-family:'DM Serif Display',serif;font-size:1.65rem;letter-spacing:.2px;}
+  .vp-wordmark .veri{color:var(--white);}
+  .vp-wordmark .pura{color:var(--gold);}
+  .vp-tagline{
+    font-family:'DM Mono',monospace;
+    font-size:.72rem;letter-spacing:2.5px;text-transform:uppercase;
+    color:var(--sky);opacity:.85;
+    margin-top:.35rem;
+  }
+  .vp-header-title{text-align:right;}
+  .vp-header-title h1{
+    font-family:'DM Serif Display',serif;
+    font-size:1.3rem;font-weight:400;margin:0;color:var(--white);
+  }
+  .vp-header-title p{
+    margin:.2rem 0 0;font-size:.82rem;color:var(--sky);opacity:.9;
+  }
+
+  /* Body layout */
+  .vp-body{
+    display:grid;
+    grid-template-columns:1.05fr 1fr;
+    gap:1.75rem;
+    padding:2rem 2.5rem 0;
+  }
+  @media (max-width:880px){ .vp-body{grid-template-columns:1fr;} }
+
+  .panel{
+    background:var(--white);
+    border:1px solid var(--slate-line);
+    border-radius:6px;
+    padding:1.5rem 1.6rem;
+  }
+  .panel h2{
+    font-family:'DM Serif Display',serif;
+    font-size:1.05rem;font-weight:400;
+    margin:0 0 .2rem;color:var(--navy);
+  }
+  .panel .sub{
+    font-size:.78rem;color:var(--slate);margin:0 0 1.25rem;line-height:1.4;
+  }
+
+  /* Section labels within inputs */
+  .group-label{
+    font-family:'DM Mono',monospace;
+    font-size:.68rem;letter-spacing:1.8px;text-transform:uppercase;
+    color:var(--gold-dim);
+    margin:1.3rem 0 .7rem;
+    padding-top:1rem;
+    border-top:1px solid var(--slate-line);
+  }
+  .group-label:first-of-type{margin-top:0;padding-top:0;border-top:none;}
+
+  .field{margin-bottom:1rem;}
+  .field-row{
+    display:flex;justify-content:space-between;align-items:baseline;
+    margin-bottom:.35rem;
+  }
+  .field-row label{font-size:.85rem;color:var(--ink);font-weight:500;}
+  .field-row .val{
+    font-family:'DM Mono',monospace;font-size:.85rem;font-weight:500;
+    color:var(--navy);min-width:70px;text-align:right;
+  }
+  input[type="range"]{
+    width:100%;height:4px;-webkit-appearance:none;
+    background:var(--slate-line);border-radius:2px;outline:none;
+  }
+  input[type="range"]::-webkit-slider-thumb{
+    -webkit-appearance:none;width:16px;height:16px;border-radius:50%;
+    background:var(--navy);border:2px solid var(--gold);cursor:pointer;
+  }
+  input[type="range"]::-moz-range-thumb{
+    width:16px;height:16px;border-radius:50%;
+    background:var(--navy);border:2px solid var(--gold);cursor:pointer;
+  }
+  input[type="number"]{
+    width:100%;padding:.5rem .6rem;
+    border:1px solid var(--slate-line);border-radius:4px;
+    font-family:'DM Mono',monospace;font-size:.85rem;color:var(--ink);
+    background:var(--cream);
+  }
+  input[type="number"]:focus, input[type="range"]:focus{outline:2px solid var(--gold-dim);outline-offset:2px;}
+  .field-pair{display:grid;grid-template-columns:1fr 1fr;gap:.8rem;}
+  .field-pair .mini-label{font-size:.72rem;color:var(--slate);margin-bottom:.3rem;display:block;}
+
+  .note-inline{
+    font-size:.72rem;color:var(--slate);margin-top:.3rem;line-height:1.4;
+  }
+
+  /* View toggle */
+  .view-toggle{
+    display:flex;gap:.4rem;background:var(--sky);
+    padding:.25rem;border-radius:6px;margin-bottom:1.25rem;width:fit-content;
+  }
+  .view-toggle button{
+    font-family:'DM Sans',sans-serif;font-weight:600;font-size:.82rem;
+    padding:.45rem 1rem;border:none;border-radius:4px;
+    background:transparent;color:var(--navy);cursor:pointer;
+  }
+  .view-toggle button.active{background:var(--navy);color:var(--white);}
+
+  /* Results panel */
+  .headline{
+    background:var(--navy);color:var(--white);
+    border-radius:6px;padding:1.4rem 1.5rem;margin-bottom:1.3rem;
+    display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem;
+  }
+  .headline .hl-block .label{
+    font-family:'DM Mono',monospace;font-size:.68rem;letter-spacing:1.5px;
+    text-transform:uppercase;color:var(--sky);opacity:.85;margin-bottom:.3rem;
+  }
+  .headline .hl-block .figure{
+    font-family:'DM Serif Display',serif;font-size:1.9rem;color:var(--gold);
+  }
+  .headline .hl-block.roi .figure{color:var(--white);}
+
+  .bench-title{font-size:.8rem;font-weight:600;color:var(--ink);margin:0 0 .7rem;}
+  .bench-row{margin-bottom:.85rem;}
+  .bench-row .bench-labels{
+    display:flex;justify-content:space-between;font-size:.78rem;margin-bottom:.3rem;
+  }
+  .bench-row .bench-labels .amt{font-family:'DM Mono',monospace;font-weight:500;color:var(--navy);}
+  .bar-track{height:9px;background:var(--slate-line);border-radius:5px;overflow:hidden;}
+  .bar-fill{height:100%;background:var(--gold);border-radius:5px;transition:width .2s ease;}
+  .bar-fill.fee{background:var(--slate);}
+
+  .breakdown{margin-top:1.5rem;}
+  .breakdown h3{
+    font-family:'DM Mono',monospace;font-size:.68rem;letter-spacing:1.8px;
+    text-transform:uppercase;color:var(--gold-dim);margin:0 0 .8rem;
+  }
+  .bd-row{
+    display:flex;justify-content:space-between;align-items:center;
+    padding:.55rem 0;border-bottom:1px solid var(--slate-line);font-size:.85rem;
+  }
+  .bd-row:last-child{border-bottom:none;}
+  .bd-row .bd-label{color:var(--ink);}
+  .bd-row .bd-val{font-family:'DM Mono',monospace;font-weight:500;color:var(--navy);}
+
+  .net-row{
+    display:flex;justify-content:space-between;align-items:center;
+    padding:.9rem 0 .2rem;margin-top:.3rem;border-top:2px solid var(--navy);
+  }
+  .net-row .bd-label{font-weight:700;color:var(--navy);}
+  .net-row .bd-val{font-family:'DM Serif Display',serif;font-size:1.2rem;color:var(--good);}
+
+  .disclaimer{
+    padding:1.5rem 2.5rem 0;font-size:.72rem;color:var(--slate);line-height:1.5;
+  }
+  .disclaimer strong{color:var(--ink);}
+
+  @media (max-width:600px){
+    .vp-header, .vp-body, .disclaimer{padding-left:1.2rem;padding-right:1.2rem;}
+    .vp-header-title{text-align:left;}
+  }
+</style>
+</head>
+<body>
+<div class="vp-wrap">
+
+  <div class="vp-header">
+    <div>
+      <div class="vp-brand">
+        <div class="vp-mark">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M4 12.5L9.5 18L20 6" stroke="#D4A847" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <span class="vp-wordmark"><span class="veri">Veri</span><span class="pura">Pura</span></span>
+      </div>
+      <div class="vp-tagline">Document Validation &amp; Attestation</div>
+    </div>
+    <div class="vp-header-title">
+      <h1>Importer Value Calculator</h1>
+      <p>Illustrating the financial case for freight forwarder partners</p>
+    </div>
+  </div>
+
+  <div style="padding:1.75rem 2.5rem 0;">
+    <div class="view-toggle">
+      <button id="btnSingle" class="active">Single Shipment</button>
+      <button id="btnAnnual">Annual View</button>
+    </div>
+  </div>
+
+  <div class="vp-body">
+
+    <!-- INPUTS -->
+    <div class="panel">
+      <h2>Shipment &amp; Risk Inputs</h2>
+      <p class="sub">Adjust to match the importer's actual shipment profile and port of entry.</p>
+
+      <div class="group-label">Shipment</div>
+      <div class="field">
+        <div class="field-row"><label>Shipment value</label><span class="val" id="outShipmentValue">€50,000</span></div>
+        <input type="range" id="shipmentValue" min="5000" max="300000" step="1000" value="50000">
+      </div>
+      <div class="field">
+        <div class="field-row"><label>Shipments per year</label><span class="val" id="outShipmentsYear">50</span></div>
+        <input type="range" id="shipmentsYear" min="1" max="500" step="1" value="50">
+      </div>
+
+      <div class="group-label">Baseline Port Risk (all causes)</div>
+      <div class="field">
+        <div class="field-row"><label>Outright rejection rate</label><span class="val" id="outRejectRate">2.0%</span></div>
+        <input type="range" id="rejectRate" min="0" max="10" step="0.1" value="2">
+      </div>
+      <div class="field">
+        <div class="field-row"><label>Hold / delay rate</label><span class="val" id="outDelayRate">1.85%</span></div>
+        <input type="range" id="delayRate" min="0" max="10" step="0.05" value="1.85">
+      </div>
+      <div class="field">
+        <div class="field-row"><label>Documentation-related share</label><span class="val" id="outDocShare">40%</span></div>
+        <input type="range" id="docShare" min="0" max="100" step="1" value="40">
+        <p class="note-inline">Share of the above rejections/delays caused by improper, incomplete, or fraudulent documentation — the portion VeriPura addresses.</p>
+      </div>
+
+      <div class="group-label">VeriPura Effectiveness</div>
+      <div class="field">
+        <div class="field-row"><label>Risk reduction on documentation-related cases</label><span class="val" id="outRiskReduction">80%</span></div>
+        <input type="range" id="riskReduction" min="0" max="100" step="1" value="80">
+      </div>
+
+      <div class="group-label">Delay / Demurrage Costs</div>
+      <div class="field-pair">
+        <div>
+          <span class="mini-label">Daily port holding charge (€)</span>
+          <input type="number" id="dailyCharge" value="450" min="0" step="10">
+        </div>
+        <div>
+          <span class="mini-label">Avg. days held when delayed</span>
+          <input type="number" id="avgDays" value="5" min="0" step="0.5">
+        </div>
+      </div>
+
+      <div class="group-label">Document Review Labor</div>
+      <div class="field-pair">
+        <div>
+          <span class="mini-label">Review hours — without VeriPura</span>
+          <input type="number" id="hoursWithout" value="3" min="0" step="0.25">
+        </div>
+        <div>
+          <span class="mini-label">Review hours — with VeriPura</span>
+          <input type="number" id="hoursWith" value="0.5" min="0" step="0.25">
+        </div>
+      </div>
+      <div class="field">
+        <span class="mini-label">Fully-loaded hourly rate (€)</span>
+        <input type="number" id="hourlyRate" value="45" min="0" step="1">
+      </div>
+
+      <div class="group-label">Labeling / Recall Risk</div>
+      <div class="field-pair">
+        <div>
+          <span class="mini-label">Recall probability — without (%)</span>
+          <input type="number" id="recallWithout" value="0.5" min="0" step="0.05">
+        </div>
+        <div>
+          <span class="mini-label">Recall probability — with (%)</span>
+          <input type="number" id="recallWith" value="0.1" min="0" step="0.05">
+        </div>
+      </div>
+      <div class="field">
+        <span class="mini-label">Average cost of a recall event (€)</span>
+        <input type="number" id="recallCost" value="150000" min="0" step="1000">
+      </div>
+    </div>
+
+    <!-- RESULTS -->
+    <div class="panel">
+      <h2>Value to the Importer</h2>
+      <p class="sub" id="scopeNote">Per shipment, based on the assumptions to the left.</p>
+
+      <div class="headline">
+        <div class="hl-block">
+          <div class="label">Net Benefit</div>
+          <div class="figure" id="netBenefit">€0</div>
+        </div>
+        <div class="hl-block roi">
+          <div class="label">Return Multiple</div>
+          <div class="figure" id="roiMultiple">0.0×</div>
+        </div>
+      </div>
+
+      <div class="bench-title">Total benefit vs. VeriPura fee</div>
+      <div class="bench-row">
+        <div class="bench-labels"><span>Total benefit</span><span class="amt" id="barBenefitVal">€0</span></div>
+        <div class="bar-track"><div class="bar-fill" id="barBenefit" style="width:0%"></div></div>
+      </div>
+      <div class="bench-row">
+        <div class="bench-labels"><span>VeriPura fee (0.8%, €250 floor)</span><span class="amt" id="barFeeVal">€0</span></div>
+        <div class="bar-track"><div class="bar-fill fee" id="barFee" style="width:0%"></div></div>
+      </div>
+
+      <div class="breakdown">
+        <h3>Where the benefit comes from</h3>
+        <div class="bd-row"><span class="bd-label">Rejection loss avoided</span><span class="bd-val" id="bdReject">€0</span></div>
+        <div class="bd-row"><span class="bd-label">Delay / demurrage cost avoided</span><span class="bd-val" id="bdDelay">€0</span></div>
+        <div class="bd-row"><span class="bd-label">Document review labor saved</span><span class="bd-val" id="bdReview">€0</span></div>
+        <div class="bd-row"><span class="bd-label">Recall cost avoided (expected)</span><span class="bd-val" id="bdRecall">€0</span></div>
+        <div class="net-row"><span class="bd-label">Net benefit after VeriPura fee</span><span class="bd-val" id="bdNet">€0</span></div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="disclaimer">
+    <strong>Scope note:</strong> VeriPura reduces risk specifically tied to improper, incomplete, or fraudulent documentation. It does not address rejections or delays arising from other causes (e.g. product safety, quarantine, or substantive non-compliance). All figures are illustrative, driven entirely by the assumptions entered above, and intended to support a conversation with the importer — not a guarantee of outcomes.
+  </div>
+
+</div>
+
+<script>
+(function(){
+  const $ = id => document.getElementById(id);
+  const fmtE = n => '€' + Math.round(n).toLocaleString('en-US');
+
+  const ids = ['shipmentValue','shipmentsYear','rejectRate','delayRate','docShare','riskReduction',
+    'dailyCharge','avgDays','hoursWithout','hoursWith','hourlyRate','recallWithout','recallWith','recallCost'];
+
+  let view = 'single';
+
+  function syncLabels(){
+    $('outShipmentValue').textContent = fmtE(+$('shipmentValue').value);
+    $('outShipmentsYear').textContent = (+$('shipmentsYear').value).toLocaleString('en-US');
+    $('outRejectRate').textContent = (+$('rejectRate').value).toFixed(1) + '%';
+    $('outDelayRate').textContent = (+$('delayRate').value).toFixed(2) + '%';
+    $('outDocShare').textContent = (+$('docShare').value) + '%';
+    $('outRiskReduction').textContent = (+$('riskReduction').value) + '%';
+  }
+
+  function calc(){
+    const shipmentValue = +$('shipmentValue').value;
+    const shipmentsYear = +$('shipmentsYear').value;
+    const rejectRate = +$('rejectRate').value / 100;
+    const delayRate = +$('delayRate').value / 100;
+    const docShare = +$('docShare').value / 100;
+    const riskReduction = +$('riskReduction').value / 100;
+    const dailyCharge = +$('dailyCharge').value;
+    const avgDays = +$('avgDays').value;
+    const hoursWithout = +$('hoursWithout').value;
+    const hoursWith = +$('hoursWith').value;
+    const hourlyRate = +$('hourlyRate').value;
+    const recallWithout = +$('recallWithout').value / 100;
+    const recallWith = +$('recallWith').value / 100;
+    const recallCost = +$('recallCost').value;
+
+    const fee = Math.max(shipmentValue * 0.008, 250);
+
+    const docRejectRate = rejectRate * docShare;
+    const docDelayRate = delayRate * docShare;
+    const avoidedRejectProb = docRejectRate * riskReduction;
+    const avoidedDelayProb = docDelayRate * riskReduction;
+
+    const rejectionLossAvoided = avoidedRejectProb * shipmentValue;
+    const delayCostAvoided = avoidedDelayProb * dailyCharge * avgDays;
+    const reviewSavings = Math.max(hoursWithout - hoursWith, 0) * hourlyRate;
+    const recallSavings = Math.max(recallWithout - recallWith, 0) * recallCost;
+
+    const totalBenefit = rejectionLossAvoided + delayCostAvoided + reviewSavings + recallSavings;
+    const netBenefit = totalBenefit - fee;
+    const roi = fee > 0 ? totalBenefit / fee : 0;
+
+    return {fee, rejectionLossAvoided, delayCostAvoided, reviewSavings, recallSavings, totalBenefit, netBenefit, roi, shipmentsYear};
+  }
+
+  function render(){
+    syncLabels();
+    const r = calc();
+    const mult = view === 'annual' ? r.shipmentsYear : 1;
+
+    $('scopeNote').textContent = view === 'annual'
+      ? 'Annual view — scaled across ' + r.shipmentsYear.toLocaleString('en-US') + ' shipments per year.'
+      : 'Per shipment, based on the assumptions to the left.';
+
+    const fee = r.fee * mult;
+    const reject = r.rejectionLossAvoided * mult;
+    const delay = r.delayCostAvoided * mult;
+    const review = r.reviewSavings * mult;
+    const recall = r.recallSavings * mult;
+    const total = r.totalBenefit * mult;
+    const net = r.netBenefit * mult;
+
+    $('netBenefit').textContent = fmtE(net);
+    $('roiMultiple').textContent = r.roi.toFixed(1) + '×';
+
+    $('bdReject').textContent = fmtE(reject);
+    $('bdDelay').textContent = fmtE(delay);
+    $('bdReview').textContent = fmtE(review);
+    $('bdRecall').textContent = fmtE(recall);
+    $('bdNet').textContent = fmtE(net);
+
+    $('barBenefitVal').textContent = fmtE(total);
+    $('barFeeVal').textContent = fmtE(fee);
+    const maxBar = Math.max(total, fee, 1);
+    $('barBenefit').style.width = Math.min(100, (total / maxBar) * 100) + '%';
+    $('barFee').style.width = Math.min(100, (fee / maxBar) * 100) + '%';
+  }
+
+  ids.forEach(id => $(id).addEventListener('input', render));
+
+  $('btnSingle').addEventListener('click', () => {
+    view = 'single';
+    $('btnSingle').classList.add('active');
+    $('btnAnnual').classList.remove('active');
+    render();
+  });
+  $('btnAnnual').addEventListener('click', () => {
+    view = 'annual';
+    $('btnAnnual').classList.add('active');
+    $('btnSingle').classList.remove('active');
+    render();
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>
