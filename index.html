@@ -310,8 +310,9 @@
         </div>
       </div>
       <div class="field">
-        <span class="mini-label">Average cost of a recall event (€)</span>
-        <input type="number" id="recallCost" value="150000" min="0" step="1000">
+        <span class="mini-label">Operational recall cost (% of shipment value)</span>
+        <input type="number" id="recallOpPct" value="15" min="0" step="1">
+        <p class="note-inline">Recall cost = shipment value (lost/destroyed product) + operational cost (recovery, logistics, disposal, notification). Excludes reputational/brand damage, which is real but not reliably quantifiable.</p>
       </div>
     </div>
 
@@ -365,7 +366,7 @@
   const fmtE = n => '€' + Math.round(n).toLocaleString('en-US');
 
   const ids = ['shipmentValue','shipmentsYear','rejectRate','delayRate','docShare','riskReduction',
-    'dailyCharge','avgDays','hoursWithout','hoursWith','hourlyRate','recallWithout','recallWith','recallCost'];
+    'dailyCharge','avgDays','hoursWithout','hoursWith','hourlyRate','recallWithout','recallWith','recallOpPct'];
 
   let view = 'single';
 
@@ -392,7 +393,8 @@
     const hourlyRate = +$('hourlyRate').value;
     const recallWithout = +$('recallWithout').value / 100;
     const recallWith = +$('recallWith').value / 100;
-    const recallCost = +$('recallCost').value;
+    const recallOpPct = +$('recallOpPct').value / 100;
+    const recallCost = shipmentValue * (1 + recallOpPct);
 
     const fee = Math.max(shipmentValue * 0.008, 250);
 
